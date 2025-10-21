@@ -1,0 +1,55 @@
+class settings
+each class with the starting value, will be for all values
+2nd value is for rebirths, and the 3rd one will be for accesions
+and the last one will be for total values
+
+noob - 0, 0, 0, 0 
+up to 1st bar, no bar max
+multiplier - 1
+
+noober - 20k, 2, 0, 30k
+up to 1st bar, no bar max
+multiplier - 2
+
+noob begginner - 2m, 10, 0, 5.5m
+up to 1st bar, no bar max
+multiplier - 4
+
+noober begginner - 800m, 75, 1, 40b
+up to 2nd bar, 1st bar max
+multiplier - 7
+
+noob good - 5t, 250, 1, 600t 
+up to 2nd bar, 1st bar max
+multiplier - 12
+
+noober good - 1AA, 1000, 2, 10AA 
+up to 3rd bar, 1st bar max
+multiplier - 18
+
+noob pro - 
+multiplier - 25
+
+noober pro - 
+multiplier - 33
+
+bar settings
+xp needed, xp per level
+1st bar
+10 - 1, 15 - 1, 25 - 2, 50 - 3, 110 - 5, 150 - 12, 225 - 14, 300 - 18, 410 - 22, 550 - 30, 700 - 37,
+1150 - 50, 1600 - 55, 2000 - 67, 3500 - 90, 7000 - 115, 12.5k - 160, 20k - 200, 32.5k - 250, 
+50k - 310, 80k - 340, 120k - 400, 175k - 600, 335k - 750, 500k - 1000, 800k - 1200, 1m - 1500
+2m max - 2000
+
+2nd bar
+5m - 2750, 8.5m - 4200, 11m - 4800, 16m - 6000, 25m - 7500, 40m - 10k, 60m - 11k, 72m - 12k,
+100m - 14k, 150m - 17k, 250m - 20k 
+
+3rd bar
+
+4th bar
+
+5th bar
+
+rebirth settings 
+1
