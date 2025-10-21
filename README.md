@@ -1,6 +1,6 @@
 # Incremental Training Game
 
-A complete incremental/idle game built with Python and Pygame featuring stat progression, rebirth, and ascension systems.
+A complete incremental/idle game built with Python and Pygame featuring stat progression, rebirth, and ascension systems. Optimized for 600x470 screen size.
 
 ## Features
 
@@ -11,11 +11,17 @@ A complete incremental/idle game built with Python and Pygame featuring stat pro
 - **Level System**: Each stat has its own level progression with increasing requirements
 
 ### Navigation
-- **Clickable Buttons**: Navigate between different stat pages using the left sidebar
+- **Compact Buttons**: Navigate between different stat pages using the left sidebar (abbreviated labels)
 - **7 Different Pages**: 
-  - Strength, Endurance, Agility, Speed, Meditation (training pages)
-  - Rebirth (prestige system)
-  - Ascension (advanced prestige system)
+  - Str, End, Agi, Spd, Med (training pages)
+  - Reb (rebirth/prestige system)
+  - Asc (ascension/advanced prestige system)
+
+### Layout (600x470)
+- **Left Panel (0-120px)**: Compact navigation buttons
+- **Center Panel (120-480px)**: Main content area with stat training, rebirth, or ascension pages
+- **Right Panel (480-600px)**: Stats summary, class info, multiplier display
+- **Top Bar**: Clickable progress bar with value display
 
 ### Progression Systems
 - **Rebirth System**: Reset progress for permanent multipliers (requires reaching certain value thresholds)

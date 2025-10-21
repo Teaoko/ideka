@@ -3,7 +3,7 @@ import pygame, sys, random, time, math
 pygame.init()
 
 # Screen settings
-width, height = 1000, 700
+width, height = 600, 470
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Incremental Training Game")
 
@@ -20,9 +20,9 @@ YELLOW = (255, 255, 100)
 PURPLE = (200, 100, 255)
 
 # Fonts
-font_small = pygame.font.Font(None, 24)
-font_medium = pygame.font.Font(None, 32)
-font_large = pygame.font.Font(None, 48)
+font_small = pygame.font.Font(None, 18)
+font_medium = pygame.font.Font(None, 24)
+font_large = pygame.font.Font(None, 32)
 
 # Game state
 class GameState:
@@ -87,10 +87,10 @@ def abbreviate_number(num):
 
 def create_lines():
     # Vertical dividers
-    pygame.draw.line(screen, WHITE, (200, 0), (200, height), 3)  # Left line
-    pygame.draw.line(screen, WHITE, (800, 0), (800, height), 3)  # Right line
+    pygame.draw.line(screen, WHITE, (120, 0), (120, height), 2)  # Left line
+    pygame.draw.line(screen, WHITE, (480, 0), (480, height), 2)  # Right line
     # Horizontal divider
-    pygame.draw.line(screen, WHITE, (0, 60), (width, 60), 3)  # Top line
+    pygame.draw.line(screen, WHITE, (0, 40), (width, 40), 2)  # Top line
 
 def draw_progress_bar(x, y, width, height, current, max_val, color=GREEN):
     # Background
@@ -117,24 +117,25 @@ def draw_button(x, y, width, height, text, color=GRAY, text_color=BLACK, hover_c
     return is_hovered
 
 def draw_navigation_buttons():
-    button_labels = ["Strength", "Endurance", "Agility", "Speed", "Meditation", "Rebirth", "Ascension"]
-    button_width = 180
-    button_height = 40
+    button_labels = ["Str", "End", "Agi", "Spd", "Med", "Reb", "Asc"]
+    full_labels = ["Strength", "Endurance", "Agility", "Speed", "Meditation", "Rebirth", "Ascension"]
+    button_width = 100
+    button_height = 30
     start_x = 10
-    start_y = 80
+    start_y = 50
     
-    for i, label in enumerate(button_labels):
+    for i, (label, full_label) in enumerate(zip(button_labels, full_labels)):
         x = start_x
-        y = start_y + i * (button_height + 10)
+        y = start_y + i * (button_height + 5)
         
         # Highlight current page
-        color = LIGHT_BLUE if game_state.current_page.lower() == label.lower() else GRAY
-        text_color = WHITE if game_state.current_page.lower() == label.lower() else BLACK
+        color = LIGHT_BLUE if game_state.current_page.lower() == full_label.lower() else GRAY
+        text_color = WHITE if game_state.current_page.lower() == full_label.lower() else BLACK
         
         is_hovered = draw_button(x, y, button_width, button_height, label, color, text_color)
         
         if is_hovered and pygame.mouse.get_pressed()[0]:
-            game_state.current_page = label.lower()
+            game_state.current_page = full_label.lower()
 
 def draw_main_content():
     if game_state.current_page in ["strength", "endurance", "agility", "speed", "meditation"]:
@@ -148,28 +149,28 @@ def draw_stat_page(stat_name):
     # Title
     title_text = stat_name.title()
     title_surface = font_large.render(title_text, True, WHITE)
-    screen.blit(title_surface, (220, 80))
+    screen.blit(title_surface, (130, 50))
     
     # Current value
     stat_value = getattr(game_state, stat_name)
-    value_text = f"Current {stat_name}: {abbreviate_number(stat_value)}"
+    value_text = f"{stat_name}: {abbreviate_number(stat_value)}"
     value_surface = font_medium.render(value_text, True, WHITE)
-    screen.blit(value_surface, (220, 130))
+    screen.blit(value_surface, (130, 80))
     
     # Progress bar
     bar_data = game_state.progress_bars[stat_name]
-    bar_x, bar_y = 220, 180
-    bar_width, bar_height = 560, 40
+    bar_x, bar_y = 130, 110
+    bar_width, bar_height = 340, 25
     
     draw_progress_bar(bar_x, bar_y, bar_width, bar_height, bar_data["current"], bar_data["max"])
     
     # Progress text
-    progress_text = f"Level {bar_data['level']}: {abbreviate_number(bar_data['current'])} / {abbreviate_number(bar_data['max'])}"
-    progress_surface = font_medium.render(progress_text, True, WHITE)
-    screen.blit(progress_surface, (220, 240))
+    progress_text = f"Lv{bar_data['level']}: {abbreviate_number(bar_data['current'])}/{abbreviate_number(bar_data['max'])}"
+    progress_surface = font_small.render(progress_text, True, WHITE)
+    screen.blit(progress_surface, (130, 145))
     
     # Click to train button
-    train_button_hovered = draw_button(220, 300, 200, 50, f"Train {stat_name}", GREEN, WHITE)
+    train_button_hovered = draw_button(130, 170, 120, 35, f"Train", GREEN, WHITE)
     
     if train_button_hovered and pygame.mouse.get_pressed()[0]:
         # Add progress to the bar
@@ -183,35 +184,35 @@ def draw_stat_page(stat_name):
             setattr(game_state, stat_name, getattr(game_state, stat_name) + 1)
     
     # Auto-train toggle
-    auto_text = "Auto-train: OFF"
-    auto_surface = font_medium.render(auto_text, True, WHITE)
-    screen.blit(auto_surface, (220, 380))
+    auto_text = "Auto: OFF"
+    auto_surface = font_small.render(auto_text, True, WHITE)
+    screen.blit(auto_surface, (130, 220))
 
 def draw_rebirth_page():
     # Title
     title_surface = font_large.render("Rebirth", True, WHITE)
-    screen.blit(title_surface, (220, 80))
+    screen.blit(title_surface, (130, 50))
     
     # Current rebirth count
     rebirth_text = f"Rebirths: {game_state.rebirth_count}"
     rebirth_surface = font_medium.render(rebirth_text, True, WHITE)
-    screen.blit(rebirth_surface, (220, 130))
+    screen.blit(rebirth_surface, (130, 80))
     
     # Rebirth requirements
     current_class_data = game_state.classes[game_state.current_class]
-    req_text = f"Next Rebirth requires: {abbreviate_number(current_class_data['rebirth_req'])} value"
-    req_surface = font_medium.render(req_text, True, WHITE)
-    screen.blit(req_surface, (220, 180))
+    req_text = f"Need: {abbreviate_number(current_class_data['rebirth_req'])}"
+    req_surface = font_small.render(req_text, True, WHITE)
+    screen.blit(req_surface, (130, 110))
     
     # Current value
-    value_text = f"Current value: {abbreviate_number(game_state.value)}"
-    value_surface = font_medium.render(value_text, True, WHITE)
-    screen.blit(value_surface, (220, 220))
+    value_text = f"Have: {abbreviate_number(game_state.value)}"
+    value_surface = font_small.render(value_text, True, WHITE)
+    screen.blit(value_surface, (130, 130))
     
     # Rebirth button
     can_rebirth = game_state.value >= current_class_data['rebirth_req']
     button_color = GREEN if can_rebirth else DARK_GRAY
-    rebirth_button_hovered = draw_button(220, 280, 200, 50, "Rebirth", button_color, WHITE)
+    rebirth_button_hovered = draw_button(130, 160, 120, 35, "Rebirth", button_color, WHITE)
     
     if rebirth_button_hovered and pygame.mouse.get_pressed()[0] and can_rebirth:
         # Perform rebirth
@@ -233,23 +234,27 @@ def draw_rebirth_page():
 def draw_ascension_page():
     # Title
     title_surface = font_large.render("Ascension", True, WHITE)
-    screen.blit(title_surface, (220, 80))
+    screen.blit(title_surface, (130, 50))
     
     # Current ascension count
     ascension_text = f"Ascensions: {game_state.ascension_count}"
     ascension_surface = font_medium.render(ascension_text, True, WHITE)
-    screen.blit(ascension_surface, (220, 130))
+    screen.blit(ascension_surface, (130, 80))
     
     # Ascension requirements
-    current_class_data = game_state.classes[game_state.current_class]
-    req_text = f"Next Ascension requires: {abbreviate_number(current_class_data['ascension_req'])} ascensions"
-    req_surface = font_medium.render(req_text, True, WHITE)
-    screen.blit(req_surface, (220, 180))
+    req_text = f"Need: 10 rebirths"
+    req_surface = font_small.render(req_text, True, WHITE)
+    screen.blit(req_surface, (130, 110))
+    
+    # Current rebirths
+    rebirth_text = f"Have: {game_state.rebirth_count}"
+    rebirth_surface = font_small.render(rebirth_text, True, WHITE)
+    screen.blit(rebirth_surface, (130, 130))
     
     # Ascension button
     can_ascend = game_state.rebirth_count >= 10  # Need 10 rebirths to ascend
     button_color = PURPLE if can_ascend else DARK_GRAY
-    ascension_button_hovered = draw_button(220, 250, 200, 50, "Ascend", button_color, WHITE)
+    ascension_button_hovered = draw_button(130, 160, 120, 35, "Ascend", button_color, WHITE)
     
     if ascension_button_hovered and pygame.mouse.get_pressed()[0] and can_ascend:
         # Perform ascension
@@ -267,36 +272,36 @@ def draw_ascension_page():
 def draw_right_panel():
     # Class info
     class_text = f"Class: {game_state.current_class.replace('_', ' ').title()}"
-    class_surface = font_medium.render(class_text, True, WHITE)
-    screen.blit(class_surface, (820, 80))
+    class_surface = font_small.render(class_text, True, WHITE)
+    screen.blit(class_surface, (490, 50))
     
     # Multiplier
-    mult_text = f"Multiplier: {game_state.multiplier}x"
-    mult_surface = font_medium.render(mult_text, True, WHITE)
-    screen.blit(mult_surface, (820, 120))
+    mult_text = f"Mult: {game_state.multiplier}x"
+    mult_surface = font_small.render(mult_text, True, WHITE)
+    screen.blit(mult_surface, (490, 70))
     
     # Value per second
-    vps_text = f"Value/sec: {abbreviate_number(game_state.value_per_second)}"
-    vps_surface = font_medium.render(vps_text, True, WHITE)
-    screen.blit(vps_surface, (820, 160))
+    vps_text = f"VPS: {abbreviate_number(game_state.value_per_second)}"
+    vps_surface = font_small.render(vps_text, True, WHITE)
+    screen.blit(vps_surface, (490, 90))
     
     # Stats summary
     stats_text = "Stats:"
-    stats_surface = font_medium.render(stats_text, True, WHITE)
-    screen.blit(stats_surface, (820, 220))
+    stats_surface = font_small.render(stats_text, True, WHITE)
+    screen.blit(stats_surface, (490, 120))
     
-    y_offset = 250
+    y_offset = 140
     for stat in ["strength", "endurance", "agility", "speed", "meditation"]:
         stat_value = getattr(game_state, stat)
-        stat_text = f"{stat.title()}: {abbreviate_number(stat_value)}"
+        stat_text = f"{stat[:3].title()}: {abbreviate_number(stat_value)}"
         stat_surface = font_small.render(stat_text, True, WHITE)
-        screen.blit(stat_surface, (820, y_offset))
-        y_offset += 25
+        screen.blit(stat_surface, (490, y_offset))
+        y_offset += 18
 
 def draw_clickable_progress_bar():
     # Main progress bar at the top
-    bar_x, bar_y = 220, 10
-    bar_width, bar_height = 560, 40
+    bar_x, bar_y = 130, 5
+    bar_width, bar_height = 340, 25
     
     # Calculate progress
     progress = min(game_state.value / 1000000, 1.0)  # Fill bar at 1M value
@@ -309,12 +314,12 @@ def draw_clickable_progress_bar():
     pygame.draw.rect(screen, LIGHT_BLUE, (bar_x, bar_y, fill_width, bar_height))
     
     # Draw border
-    pygame.draw.rect(screen, WHITE, (bar_x, bar_y, bar_width, bar_height), 3)
+    pygame.draw.rect(screen, WHITE, (bar_x, bar_y, bar_width, bar_height), 2)
     
     # Draw progress text
-    progress_text = f"Progress: {abbreviate_number(game_state.value)} / 1M"
-    progress_surface = font_medium.render(progress_text, True, WHITE)
-    screen.blit(progress_surface, (bar_x, bar_y + 50))
+    progress_text = f"{abbreviate_number(game_state.value)} / 1M"
+    progress_surface = font_small.render(progress_text, True, WHITE)
+    screen.blit(progress_surface, (bar_x, bar_y + 30))
     
     # Check for clicks on the bar
     mouse_pos = pygame.mouse.get_pos()
@@ -344,14 +349,14 @@ while running:
             if event.button == 1:  # Left click
                 # Handle navigation button clicks
                 button_labels = ["Strength", "Endurance", "Agility", "Speed", "Meditation", "Rebirth", "Ascension"]
-                button_width = 180
-                button_height = 40
+                button_width = 100
+                button_height = 30
                 start_x = 10
-                start_y = 80
+                start_y = 50
                 
                 for i, label in enumerate(button_labels):
                     x = start_x
-                    y = start_y + i * (button_height + 10)
+                    y = start_y + i * (button_height + 5)
                     
                     if x <= event.pos[0] <= x + button_width and y <= event.pos[1] <= y + button_height:
                         game_state.current_page = label.lower()
