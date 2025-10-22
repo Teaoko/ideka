@@ -28,7 +28,8 @@ font_large = pygame.font.Font(None, 32)
 class GameState:
     def __init__(self):
         # Core values
-        self.value = 0
+        self.value = 0  # Current value (spendable)
+        self.total_value = 0  # Total value earned (for rebirth cost)
         self.value_per_second = 1000
         self.multiplier = 1.0
         
@@ -44,6 +45,10 @@ class GameState:
         self.rebirth_count = 0
         self.ascension_count = 0
         
+        # Auto-training
+        self.auto_training = False
+        self.auto_training_stat = None
+        
         # Progress bars
         self.progress_bars = {
             "strength": {"current": 0, "max": 1000, "level": 1},
@@ -56,14 +61,14 @@ class GameState:
         # Classes
         self.current_class = "noob"
         self.classes = {
-            "noob": {"multiplier": 1, "rebirth_req": 0, "ascension_req": 0},
-            "noober": {"multiplier": 2, "rebirth_req": 20000, "ascension_req": 0},
-            "noob_beginner": {"multiplier": 4, "rebirth_req": 2000000, "ascension_req": 0},
-            "noober_beginner": {"multiplier": 7, "rebirth_req": 800000000, "ascension_req": 1},
-            "noob_good": {"multiplier": 12, "rebirth_req": 5000000000000, "ascension_req": 1},
-            "noober_good": {"multiplier": 18, "rebirth_req": 1000000000000000000, "ascension_req": 2},
-            "noob_pro": {"multiplier": 25, "rebirth_req": 1000000000000000000000, "ascension_req": 2},
-            "noober_pro": {"multiplier": 33, "rebirth_req": 1000000000000000000000000, "ascension_req": 3}
+            "noob": {"multiplier": 1, "rebirth_req": 100000, "ascension_req": 0, "ascension_unlock": 0},
+            "noober": {"multiplier": 2, "rebirth_req": 500000, "ascension_req": 0, "ascension_unlock": 0},
+            "noob_beginner": {"multiplier": 4, "rebirth_req": 2000000, "ascension_req": 0, "ascension_unlock": 0},
+            "noober_beginner": {"multiplier": 7, "rebirth_req": 10000000, "ascension_req": 5, "ascension_unlock": 1},
+            "noob_good": {"multiplier": 12, "rebirth_req": 50000000, "ascension_req": 10, "ascension_unlock": 1},
+            "noober_good": {"multiplier": 18, "rebirth_req": 200000000, "ascension_req": 20, "ascension_unlock": 2},
+            "noob_pro": {"multiplier": 25, "rebirth_req": 1000000000, "ascension_req": 50, "ascension_unlock": 2},
+            "noober_pro": {"multiplier": 33, "rebirth_req": 5000000000, "ascension_req": 100, "ascension_unlock": 3}
         }
         
         # Time tracking
@@ -144,22 +149,27 @@ def draw_main_content():
         draw_rebirth_page()
     elif game_state.current_page == "ascension":
         draw_ascension_page()
+    
+    # Turn off auto-training when switching pages
+    if game_state.current_page not in ["strength", "endurance", "agility", "speed", "meditation"]:
+        game_state.auto_training = False
+        game_state.auto_training_stat = None
 
 def draw_stat_page(stat_name):
     # Title
     title_text = stat_name.title()
     title_surface = font_large.render(title_text, True, WHITE)
-    screen.blit(title_surface, (130, 50))
+    screen.blit(title_surface, (130, 80))
     
     # Current value
     stat_value = getattr(game_state, stat_name)
     value_text = f"{stat_name}: {abbreviate_number(stat_value)}"
     value_surface = font_medium.render(value_text, True, WHITE)
-    screen.blit(value_surface, (130, 80))
+    screen.blit(value_surface, (130, 110))
     
     # Progress bar
     bar_data = game_state.progress_bars[stat_name]
-    bar_x, bar_y = 130, 110
+    bar_x, bar_y = 130, 140
     bar_width, bar_height = 340, 25
     
     draw_progress_bar(bar_x, bar_y, bar_width, bar_height, bar_data["current"], bar_data["max"])
@@ -167,10 +177,10 @@ def draw_stat_page(stat_name):
     # Progress text
     progress_text = f"Lv{bar_data['level']}: {abbreviate_number(bar_data['current'])}/{abbreviate_number(bar_data['max'])}"
     progress_surface = font_small.render(progress_text, True, WHITE)
-    screen.blit(progress_surface, (130, 145))
+    screen.blit(progress_surface, (130, 175))
     
     # Click to train button
-    train_button_hovered = draw_button(130, 170, 120, 35, f"Train", GREEN, WHITE)
+    train_button_hovered = draw_button(130, 200, 120, 35, f"Train", GREEN, WHITE)
     
     if train_button_hovered and pygame.mouse.get_pressed()[0]:
         # Add progress to the bar
@@ -182,42 +192,59 @@ def draw_stat_page(stat_name):
             bar_data["current"] = 0
             bar_data["max"] = int(bar_data["max"] * 1.5)  # Increase max for next level
             setattr(game_state, stat_name, getattr(game_state, stat_name) + 1)
+            # Add to total value when leveling up
+            game_state.total_value += 1000 * game_state.multiplier
     
     # Auto-train toggle
-    auto_text = "Auto: OFF"
-    auto_surface = font_small.render(auto_text, True, WHITE)
-    screen.blit(auto_surface, (130, 220))
+    auto_text = "Auto: ON" if game_state.auto_training and game_state.auto_training_stat == stat_name else "Auto: OFF"
+    auto_color = GREEN if game_state.auto_training and game_state.auto_training_stat == stat_name else WHITE
+    auto_surface = font_small.render(auto_text, True, auto_color)
+    screen.blit(auto_surface, (130, 250))
+    
+    # Auto-train button
+    auto_button_hovered = draw_button(130, 280, 120, 35, "Toggle Auto", YELLOW, BLACK)
+    
+    if auto_button_hovered and pygame.mouse.get_pressed()[0]:
+        if game_state.auto_training and game_state.auto_training_stat == stat_name:
+            # Turn off auto-training
+            game_state.auto_training = False
+            game_state.auto_training_stat = None
+        else:
+            # Turn on auto-training for this stat
+            game_state.auto_training = True
+            game_state.auto_training_stat = stat_name
 
 def draw_rebirth_page():
     # Title
     title_surface = font_large.render("Rebirth", True, WHITE)
-    screen.blit(title_surface, (130, 50))
+    screen.blit(title_surface, (130, 80))
     
     # Current rebirth count
     rebirth_text = f"Rebirths: {game_state.rebirth_count}"
     rebirth_surface = font_medium.render(rebirth_text, True, WHITE)
-    screen.blit(rebirth_surface, (130, 80))
+    screen.blit(rebirth_surface, (130, 110))
     
     # Rebirth requirements
     current_class_data = game_state.classes[game_state.current_class]
-    req_text = f"Need: {abbreviate_number(current_class_data['rebirth_req'])}"
+    req_text = f"Cost: {abbreviate_number(current_class_data['rebirth_req'])} total value"
     req_surface = font_small.render(req_text, True, WHITE)
-    screen.blit(req_surface, (130, 110))
+    screen.blit(req_surface, (130, 140))
     
-    # Current value
-    value_text = f"Have: {abbreviate_number(game_state.value)}"
+    # Current total value
+    value_text = f"Have: {abbreviate_number(game_state.total_value)}"
     value_surface = font_small.render(value_text, True, WHITE)
-    screen.blit(value_surface, (130, 130))
+    screen.blit(value_surface, (130, 160))
     
     # Rebirth button
-    can_rebirth = game_state.value >= current_class_data['rebirth_req']
+    can_rebirth = game_state.total_value >= current_class_data['rebirth_req']
     button_color = GREEN if can_rebirth else DARK_GRAY
-    rebirth_button_hovered = draw_button(130, 160, 120, 35, "Rebirth", button_color, WHITE)
+    rebirth_button_hovered = draw_button(130, 190, 120, 35, "Rebirth", button_color, WHITE)
     
     if rebirth_button_hovered and pygame.mouse.get_pressed()[0] and can_rebirth:
         # Perform rebirth
         game_state.rebirth_count += 1
         game_state.value = 0
+        game_state.total_value = 0  # Reset total value
         game_state.multiplier = current_class_data['multiplier']
         
         # Reset stats but keep some progress
@@ -228,39 +255,47 @@ def draw_rebirth_page():
         
         # Update class if possible
         for class_name, class_data in game_state.classes.items():
-            if game_state.rebirth_count >= class_data['rebirth_req'] and game_state.ascension_count >= class_data['ascension_req']:
+            if game_state.rebirth_count >= class_data['rebirth_req'] and game_state.ascension_count >= class_data['ascension_unlock']:
                 game_state.current_class = class_name
 
 def draw_ascension_page():
     # Title
     title_surface = font_large.render("Ascension", True, WHITE)
-    screen.blit(title_surface, (130, 50))
+    screen.blit(title_surface, (130, 80))
     
     # Current ascension count
     ascension_text = f"Ascensions: {game_state.ascension_count}"
     ascension_surface = font_medium.render(ascension_text, True, WHITE)
-    screen.blit(ascension_surface, (130, 80))
+    screen.blit(ascension_surface, (130, 110))
     
     # Ascension requirements
-    req_text = f"Need: 10 rebirths"
+    current_class_data = game_state.classes[game_state.current_class]
+    req_text = f"Cost: {current_class_data['ascension_req']} rebirths"
     req_surface = font_small.render(req_text, True, WHITE)
-    screen.blit(req_surface, (130, 110))
+    screen.blit(req_surface, (130, 140))
     
     # Current rebirths
     rebirth_text = f"Have: {game_state.rebirth_count}"
     rebirth_surface = font_small.render(rebirth_text, True, WHITE)
-    screen.blit(rebirth_surface, (130, 130))
+    screen.blit(rebirth_surface, (130, 160))
+    
+    # Class requirement
+    class_req_text = f"Class needed: {current_class_data['ascension_unlock']} ascensions"
+    class_req_surface = font_small.render(class_req_text, True, WHITE)
+    screen.blit(class_req_surface, (130, 180))
     
     # Ascension button
-    can_ascend = game_state.rebirth_count >= 10  # Need 10 rebirths to ascend
+    can_ascend = (game_state.rebirth_count >= current_class_data['ascension_req'] and 
+                  game_state.ascension_count >= current_class_data['ascension_unlock'])
     button_color = PURPLE if can_ascend else DARK_GRAY
-    ascension_button_hovered = draw_button(130, 160, 120, 35, "Ascend", button_color, WHITE)
+    ascension_button_hovered = draw_button(130, 210, 120, 35, "Ascend", button_color, WHITE)
     
     if ascension_button_hovered and pygame.mouse.get_pressed()[0] and can_ascend:
         # Perform ascension
         game_state.ascension_count += 1
-        game_state.rebirth_count = 0
+        game_state.rebirth_count -= current_class_data['ascension_req']  # Spend rebirths
         game_state.value = 0
+        game_state.total_value = 0
         game_state.multiplier *= 2  # Double multiplier on ascension
         
         # Reset all progress
@@ -273,24 +308,29 @@ def draw_right_panel():
     # Class info
     class_text = f"Class: {game_state.current_class.replace('_', ' ').title()}"
     class_surface = font_small.render(class_text, True, WHITE)
-    screen.blit(class_surface, (490, 50))
+    screen.blit(class_surface, (490, 80))
     
     # Multiplier
     mult_text = f"Mult: {game_state.multiplier}x"
     mult_surface = font_small.render(mult_text, True, WHITE)
-    screen.blit(mult_surface, (490, 70))
+    screen.blit(mult_surface, (490, 100))
     
     # Value per second
     vps_text = f"VPS: {abbreviate_number(game_state.value_per_second)}"
     vps_surface = font_small.render(vps_text, True, WHITE)
-    screen.blit(vps_surface, (490, 90))
+    screen.blit(vps_surface, (490, 120))
+    
+    # Current value
+    current_text = f"Value: {abbreviate_number(game_state.value)}"
+    current_surface = font_small.render(current_text, True, WHITE)
+    screen.blit(current_surface, (490, 140))
     
     # Stats summary
     stats_text = "Stats:"
     stats_surface = font_small.render(stats_text, True, WHITE)
-    screen.blit(stats_surface, (490, 120))
+    screen.blit(stats_surface, (490, 170))
     
-    y_offset = 140
+    y_offset = 190
     for stat in ["strength", "endurance", "agility", "speed", "meditation"]:
         stat_value = getattr(game_state, stat)
         stat_text = f"{stat[:3].title()}: {abbreviate_number(stat_value)}"
@@ -299,27 +339,33 @@ def draw_right_panel():
         y_offset += 18
 
 def draw_clickable_progress_bar():
-    # Main progress bar at the top
-    bar_x, bar_y = 130, 5
+    # Main progress bar at the top (moved down from line)
+    bar_x, bar_y = 130, 15
     bar_width, bar_height = 340, 25
     
-    # Calculate progress
-    progress = min(game_state.value / 1000000, 1.0)  # Fill bar at 1M value
+    # Calculate progress for ascension (rebirths needed)
+    current_class_data = game_state.classes[game_state.current_class]
+    rebirth_progress = min(game_state.rebirth_count / max(current_class_data['ascension_req'], 1), 1.0)
     
     # Draw background
     pygame.draw.rect(screen, DARK_GRAY, (bar_x, bar_y, bar_width, bar_height))
     
     # Draw fill
-    fill_width = int(progress * bar_width)
-    pygame.draw.rect(screen, LIGHT_BLUE, (bar_x, bar_y, fill_width, bar_height))
+    fill_width = int(rebirth_progress * bar_width)
+    pygame.draw.rect(screen, PURPLE, (bar_x, bar_y, fill_width, bar_height))
     
     # Draw border
     pygame.draw.rect(screen, WHITE, (bar_x, bar_y, bar_width, bar_height), 2)
     
     # Draw progress text
-    progress_text = f"{abbreviate_number(game_state.value)} / 1M"
+    progress_text = f"Rebirths: {game_state.rebirth_count} / {current_class_data['ascension_req']}"
     progress_surface = font_small.render(progress_text, True, WHITE)
     screen.blit(progress_surface, (bar_x, bar_y + 30))
+    
+    # Draw total value text below
+    total_text = f"Total Value: {abbreviate_number(game_state.total_value)}"
+    total_surface = font_small.render(total_text, True, WHITE)
+    screen.blit(total_surface, (bar_x, bar_y + 50))
     
     # Check for clicks on the bar
     mouse_pos = pygame.mouse.get_pos()
@@ -328,6 +374,7 @@ def draw_clickable_progress_bar():
         pygame.mouse.get_pressed()[0]):
         # Add value when clicked
         game_state.value += 1000 * game_state.multiplier
+        game_state.total_value += 1000 * game_state.multiplier
 
 # Main game loop
 clock = pygame.time.Clock()
@@ -340,6 +387,24 @@ while running:
     
     # Auto-increment value
     game_state.value += game_state.value_per_second * game_state.multiplier * dt
+    game_state.total_value += game_state.value_per_second * game_state.multiplier * dt
+    
+    # Auto-training logic
+    if game_state.auto_training and game_state.auto_training_stat:
+        stat_name = game_state.auto_training_stat
+        bar_data = game_state.progress_bars[stat_name]
+        
+        # Add progress to the bar
+        bar_data["current"] += 50 * game_state.multiplier * dt  # Slower than manual training
+        
+        # Check for level up
+        if bar_data["current"] >= bar_data["max"]:
+            bar_data["level"] += 1
+            bar_data["current"] = 0
+            bar_data["max"] = int(bar_data["max"] * 1.5)  # Increase max for next level
+            setattr(game_state, stat_name, getattr(game_state, stat_name) + 1)
+            # Add to total value when leveling up
+            game_state.total_value += 1000 * game_state.multiplier
     
     # Handle events
     for event in pygame.event.get():

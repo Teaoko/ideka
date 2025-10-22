@@ -5,10 +5,12 @@ A complete incremental/idle game built with Python and Pygame featuring stat pro
 ## Features
 
 ### Core Gameplay
-- **Clickable Progress Bar**: Click the blue progress bar at the top to gain value
+- **Clickable Progress Bar**: Click the purple progress bar at the top to gain value (shows rebirth progress for ascension)
 - **Auto-Progression**: Value automatically increases over time
 - **Stat Training**: Train 5 different attributes (Strength, Endurance, Agility, Speed, Meditation)
 - **Level System**: Each stat has its own level progression with increasing requirements
+- **Auto-Training**: Toggle auto-training for any stat (turns off when switching pages)
+- **Total Value System**: Track total value earned from training for rebirth costs
 
 ### Navigation
 - **Compact Buttons**: Navigate between different stat pages using the left sidebar (abbreviated labels)
@@ -24,9 +26,9 @@ A complete incremental/idle game built with Python and Pygame featuring stat pro
 - **Top Bar**: Clickable progress bar with value display
 
 ### Progression Systems
-- **Rebirth System**: Reset progress for permanent multipliers (requires reaching certain value thresholds)
-- **Ascension System**: Advanced reset that requires multiple rebirths and provides even greater bonuses
-- **Class System**: 8 different classes with increasing multipliers and requirements
+- **Rebirth System**: Costs total value earned (resets total value) for permanent multipliers and class upgrades
+- **Ascension System**: Costs rebirths and requires specific class levels, provides massive multiplier bonuses
+- **Class System**: 8 different classes with increasing multipliers, rebirth costs, and ascension requirements
 
 ### UI Features
 - **Real-time Stats**: Right panel shows current class, multiplier, and all stat values
@@ -62,21 +64,31 @@ A complete incremental/idle game built with Python and Pygame featuring stat pro
 - Resets rebirth count but keeps ascension count
 
 ### Classes
-- **Noob**: 1x multiplier (starting class)
-- **Noober**: 2x multiplier (20K value required)
-- **Noob Beginner**: 4x multiplier (2M value required)
-- **Noober Beginner**: 7x multiplier (800M value + 1 ascension required)
-- **Noob Good**: 12x multiplier (5T value + 1 ascension required)
-- **Noober Good**: 18x multiplier (1AA value + 2 ascensions required)
-- **Noob Pro**: 25x multiplier (1AB value + 2 ascensions required)
-- **Noober Pro**: 33x multiplier (1AC value + 3 ascensions required)
+- **Noob**: 1x multiplier, 100K total value cost, 0 ascensions needed
+- **Noober**: 2x multiplier, 500K total value cost, 0 ascensions needed
+- **Noob Beginner**: 4x multiplier, 2M total value cost, 0 ascensions needed
+- **Noober Beginner**: 7x multiplier, 10M total value cost, 1 ascension needed
+- **Noob Good**: 12x multiplier, 50M total value cost, 1 ascension needed
+- **Noober Good**: 18x multiplier, 200M total value cost, 2 ascensions needed
+- **Noob Pro**: 25x multiplier, 1B total value cost, 2 ascensions needed
+- **Noober Pro**: 33x multiplier, 5B total value cost, 3 ascensions needed
+
+### Ascension Costs
+- **Noob/Noober/Noob Beginner**: Not available
+- **Noober Beginner**: 5 rebirths
+- **Noob Good**: 10 rebirths
+- **Noober Good**: 20 rebirths
+- **Noob Pro**: 50 rebirths
+- **Noober Pro**: 100 rebirths
 
 ## Tips
 
 1. Focus on training all stats evenly for balanced progression
-2. Use rebirths to increase your multiplier and unlock better classes
-3. Save up for ascensions to get massive multiplier boosts
-4. Click the progress bar frequently to gain value faster
-5. Higher classes provide better multipliers for faster progression
+2. Use auto-training to passively level up stats while you're away
+3. Save up total value for rebirths to increase your multiplier and unlock better classes
+4. Save up rebirths for ascensions to get massive multiplier boosts (2x per ascension)
+5. Click the progress bar frequently to gain value faster
+6. Higher classes provide better multipliers and unlock ascension options
+7. Auto-training turns off when switching pages, so remember to re-enable it
 
 Enjoy the game!
